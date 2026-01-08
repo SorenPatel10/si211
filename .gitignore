@@ -1,0 +1,28 @@
+# This file describes files/directories we want                                                                                  
+# git to ignore, i.e. never consider for version                                                                                 
+# control.  If this is added after the fact, and                                                                                 
+# we want to wipe any existing examples of such                                                                                  
+# files from the repo and future versioning, do                                                                                  
+# something like:                                                                                                                
+# git ls-files | grep -E '[.](~|swp|swo)$' | xargs git rm --cached                                                               
+# ... but for each pattern you are trying to wipe                                                                                
+                                                                                                                                 
+# emacs and vim temp files                                                                                                       
+*~                                                                                                                               
+                                                                                                                                 
+# vim temp files                                                                                                                 
+.*.swp                                                                                                                           
+.*.swo                                                                                                                           
+.swp                                                                                                                             
+.swo                                                                                                                             
+                                                                                                                                 
+# vscode and python and misc DrRoche suggestions                                                                                 
+.vscode/                                                                                                                         
+.history/                                                                                                                        
+*.vsix                                                                                                                           
+*.o                                                                                                                              
+__pycache__/                                                                                                                     
+*.pyc                                                                                                                            
+*.pyo                                                                                                                            
+venv/                                                                                                                            
+*.egg-info/                                                                                                                      
