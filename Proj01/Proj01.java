@@ -23,12 +23,15 @@ public class Proj01{
             return;
         }
         
-        //read filename and 11 sections
+        //read filename and sections
         String fname = args[0];
-        Section[] sections = readSections(fname, 11);
+        SectionList sections = readSections(fname);
 
         //scanner to read user input
         Scanner input = new Scanner(System.in);
+
+        //create schedule
+        Schedule sched = new Schedule();
         
         //read commands until quit
         String cmd = "";
@@ -36,47 +39,59 @@ public class Proj01{
             System.out.print("> ");
             cmd = input.next();
             
-            //sections is typed
+            //sections command
             if(cmd.equals("sections")){
                 if(!input.hasNext())
                     continue;
                 String courseNumber = input.next();
                 
-                //loop through sections and print matching ones
-                for(Section temp: sections){
-                    if(temp.getCourse().equals(courseNumber))
-                        System.out.println(temp);
-                }
+                //print matching sections
+                sections.printByCourse(courseNumber);
+            }
+            //add command
+            else if(cmd.equals("add")){
+                
+                //take user input and query list
+                String course = input.next();
+                String sec = input.next();
+                Section temp = sections.find(course,sec);
+
+                //either add to schedule or give error message
+                if(temp==null)
+                    System.out.println("Error! Section not found!");
+                else
+                    sched.add(temp);
+            }
+            //show comand
+            else if(cmd.equals("show")){
+                sched.printSectionsInSchedule();
             }
             //invalid command
             else if(!cmd.equals("quit")){
                 System.out.println("Unknown command: " + cmd);
             }
         }
-
     }
 
     /**
-     * readSection method to return an array of
-     * sections from a file with specified length
+     * readSections method to return a unknown size
+     * list of sections from the given file
      */
-    private static Section[] readSections(String fname, int num){
-        Section[] sections = new Section[num];
+    private static SectionList readSections(String fname){
+        SectionList sections = new SectionList();
         
         //create and error check scanner
         Scanner sc = null;
         try { sc = new Scanner(new FileReader(fname)); } 
         catch(IOException e) { e.printStackTrace(); System.exit(1); }
 
-        int index = 0;
-
-        //loop until specified amount of sections are read 
-        while(sc.hasNextLine() && index < num){
+        //loop until last line
+        while(sc.hasNextLine()){
             String currLine = sc.nextLine();
             
-            //split by tab, initialize sections array
+            //split by tab, add to list
             String[] words = currLine.split("\t");
-            sections[index++] = new Section(words[0], words[1], words[2], words[3]);
+            sections.add(new Section(words[0], words[1], words[2], words[3]));
         }
 
         sc.close();
