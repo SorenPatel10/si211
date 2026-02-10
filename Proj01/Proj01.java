@@ -66,6 +66,10 @@ public class Proj01{
             else if(cmd.equals("show")){
                 sched.printSectionsInSchedule();
             }
+            //week command
+            else if(cmd.equals("week")){
+                sched.printWeek();
+            }
             //invalid command
             else if(!cmd.equals("quit")){
                 System.out.println("Unknown command: " + cmd);

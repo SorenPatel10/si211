@@ -44,5 +44,19 @@ public class Schedule{
         }
     }
 
+    /**
+     * print current week (creates empty and merges on top)
+     */
+    public void printWeek(){
+        //empty week
+        Week week = new Week();
+
+        //add all sections by creating/merging temporary week
+        for(int i = 0; i < size; i++){
+            Week temp = new Week(sections[i].getDays());
+            week.merge(temp);
+        }
+        week.print();
+    }
 
 }
