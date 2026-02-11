@@ -70,6 +70,11 @@ public class Proj01{
             else if(cmd.equals("week")){
                 sched.printWeek();
             }
+            //fit command
+            else if(cmd.equals("fit")){
+                String sec = input.next();
+                sections.printFits(sched,sec);
+            }
             //invalid command
             else if(!cmd.equals("quit")){
                 System.out.println("Unknown command: " + cmd);

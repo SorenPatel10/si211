@@ -128,4 +128,21 @@ public class Week{
             }
         }
     }
+
+    /**
+     * check if 2 weeks have conflicting days
+     */
+    public boolean conflicts(Week other){
+        //check each slot in the 2d array
+        for(int i = 0; i < 6; i++){
+            for(int j = 0; j < 5; j++){
+                //both indices have a day mark
+                if(this.layout[i][j]=='x' && other.layout[i][j]=='x')
+                    return true;
+            }
+        }
+        //no conflict days
+        return false;
+    }
+
 }

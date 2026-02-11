@@ -78,4 +78,25 @@ public class SectionList {
         //nothing found
         return null;
     }
+
+    /**
+     * print sections that fit the parameter schedule
+     */
+    public void printFits(Schedule sched, String str){
+        Node curr = head;
+
+        while(curr != null){
+            Section s = curr.data;
+
+            //filter by course
+            if(str.equals("any") || s.getCourse().equals(str)){
+                if(sched.fits(s)){
+                    System.out.println(s);
+                }
+            }
+
+            curr = curr.next;
+        }
+    }
+
 }
