@@ -52,10 +52,7 @@ public class FilterTweetQueue extends DumpTweetQueue {
         return filterBanged;
     }
 
-    public FilterTweetQueue reset(){
-        //to do 
 
-    }
 
     public int getCount() {
         return count;

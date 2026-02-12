@@ -33,6 +33,9 @@ public class Lab06{
             tweets.enqueue(Tweet.read(sc));
             tweetCount++;
         }
+
+        FilterTweetQueue originalTweets = tweets; 
+
         //print amt of tweets in file
         System.out.println(tweetCount + " tweets");
         String cmd = "";
@@ -54,7 +57,7 @@ public class Lab06{
                 tweets = tweets.filterBang(word);
             } else if(cmd.equals("reset")) {
                 System.out.println(tweetCount + " tweets");
-                tweets = tweets.reset();
+                tweets = originalTweets; //tweets.reset();
                 continue;
             }
         }
