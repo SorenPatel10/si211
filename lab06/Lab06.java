@@ -20,7 +20,7 @@ public class Lab06{
         
         //error check cmdline
         if(args.length == 0){
-            System.out.println("usage: java Proj01 <sectionsfile>");
+            System.out.println("usage: java Lab06 <filename>");
             return;
         }
         
