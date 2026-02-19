@@ -1,14 +1,26 @@
+/*
+Soren Patel, Sid Swarup
+Lab06
+Lab06.java
+*/
+
 import java.util.*;
 import si211.*;
 import java.io.*;
 
+/**
+ * Class Lab06
+ */
 public class Lab06{
     
+    /**
+     * main method
+     */
     public static void main(String[] args){
         
         //error check cmdline
         if(args.length == 0){
-            System.out.println("usage: java Proj01 <sectionsfile>");
+            System.out.println("usage: java Lab06 <filename>");
             return;
         }
         
@@ -39,6 +51,8 @@ public class Lab06{
         //print amt of tweets in file
         System.out.println(tweetCount + " tweets");
         String cmd = "";
+        
+        //command handling, stop when quit is entered
         while(!cmd.equals("quit")){
             System.out.print("> ");
             cmd = input.next();
@@ -49,15 +63,18 @@ public class Lab06{
             if(cmd.equals("dump")){
                 tweets.dump();
                 System.out.println(tweets.getCount() + " tweets");
+            //filter cmd
             } else if(cmd.equals("filter")) {
                 String word = input.next();
                 tweets = tweets.filter(word);
+            //filter! cmd
             } else if(cmd.equals("filter!")) {
                 String word = input.next();
                 tweets = tweets.filterBang(word);
+            //reset cmd
             } else if(cmd.equals("reset")) {
                 System.out.println(tweetCount + " tweets");
-                tweets = originalTweets; //tweets.reset();
+                tweets = originalTweets;
                 continue;
             }
         }
