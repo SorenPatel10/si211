@@ -1,2 +1,32 @@
 MIDN 3/C Soren Patel (284932)
 MIDN 3/C Siddharth Swarup (286354)
+
+Step 1:
+We used inheritance/polymorphism by making a ThingA and a ThingB
+which extends ThingA. It has all the same functionalities but 
+it introduces a new concept in its movement, that is, tracking the 
+iterations since last movement. We use data hiding by making all fields
+private or protected (Rand), and we use encapsulation by only including
+"Thing" methods in the ThingA,B classes. There is also a ThingList class
+which has an implicit Node class. In this class, there are only methods
+that deal with ThingLists. The driver file Lab07b.java only handles
+command line input, creates the ThingList, and manages the overall program
+loop.
+
+Step 2:
+Adding a new type of Thing (ThingC) was easy. I just had to make a new class
+ThingC which also extended ThingA. I had to only modify the fields,
+constructor, and the overridden maybeTurn method. Then in main of
+the driver file I just had to initialize a new Thing and add it to 
+the already declared ThingList.
+
+Final:
+Polymorphic function calls in:
+Lab07b.java line  19
+Lab07c.java lines 19,22
+
+They deal with adding ThingB and ThingC to a ThingList of ThingA's.
+This is possible since both of those classes extend ThingA, i.e.
+ThingB and ThingC ARE ThingA's. This ensures the program works since i
+can have a Thinglist of ThingA's allowing for all Thing types to be 
+added, even those extended ones with additional functionalities.
