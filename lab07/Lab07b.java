@@ -1,11 +1,29 @@
+/*
+MIDN 3/C Soren Patel (284932)
+MIDN 3/C Siddharth Swarup (286354)
+Lab07
+Lab07b.java
+*/
+
 import java.util.*;
 
+/**
+ * Class Lab07b
+ */
 public class Lab07b{
+    
+    /**
+     * main method
+     */
     public static void main(String[] args) {
+        
         int N = 200;
+        
+        //handle cmd line argument
         if (args.length != 0)
             N = Integer.parseInt(args[0]);
 
+        //create thinglist and add Thing types
         ThingList L = new ThingList();
         int count = 0;
         while (true) {

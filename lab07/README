@@ -21,12 +21,12 @@ the driver file I just had to initialize a new Thing and add it to
 the already declared ThingList.
 
 Final:
-Polymorphic function calls in:
+Polymorphic calls in:
 Lab07b.java line  19
 Lab07c.java lines 19,22
 
 They deal with adding ThingB and ThingC to a ThingList of ThingA's.
 This is possible since both of those classes extend ThingA, i.e.
-ThingB and ThingC ARE ThingA's. This ensures the program works since i
+ThingB and ThingC ARE ThingA's. This ensures the program works since I
 can have a Thinglist of ThingA's allowing for all Thing types to be 
 added, even those extended ones with additional functionalities.
