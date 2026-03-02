@@ -1,0 +1,12 @@
+digraph "Design" {
+"Cart" -> "Item";
+"Cart" -> "Queue";
+"Driver" -> "Cart";
+"Driver" -> "Item";
+"Driver" -> "Store";
+"Item" -> "Cart";
+"Item" -> "Queue";
+"Queue" -> "Item";
+"Store" -> "Item";
+"Store" -> "Queue";
+}

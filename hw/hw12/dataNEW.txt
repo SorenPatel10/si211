@@ -1,0 +1,14 @@
+234567 10 Tea $6.00
+345674 5 Peanut Butter $4.80
+456786 2 Jam $3.90
+567890 9 Honey $7.50
+789010 15 Spinach $3.00
+890123 15 Broccoli $3.60
+901238 12 Salmon $18.00
+123451 8 Tuna $9.50
+234564 5 Avocado $2.75
+345679 5 Bell Peppers $2.20
+456782 8 Mushrooms $4.99
+567893 3 Garlic $1.80
+890123 1 Strawberries $6.75
+901235 11 Milk $3.12
