@@ -20,7 +20,11 @@ public class Lab09b
   public static void main(String[] args)
   {
     //set verbose flags
-    boolean verbose = args.length > 0 && args[0].equals("-v");
+    boolean verbose = false;
+    for(String temp: args){
+      if(temp.equals("-v"))
+        verbose = true;
+    }
 
     //input scanner, flag to see if reading from file or not
     Scanner sc = null;
