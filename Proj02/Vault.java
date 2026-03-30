@@ -31,15 +31,31 @@ public class Vault {
     }
 
     /**
-     * method to read users from a vault file
+     * private inner class to store other data entries
      */
-    private static ArrayList<UserInfo> readUsers(String fname) {
-        ArrayList<UserInfo> users = new ArrayList<>();
+    private static class DataEntry{
+        String username;
+        String encalg;
+        String ciphertext;
+
+        /**
+         * constructor
+         */
+        public DataEntry(String username, String encalg, String ciphertext){
+            this.username = username;
+            this.encalg = encalg;
+            this.ciphertext = ciphertext;
+        }
+    }
+
+    /**
+     * method to read users and data from a vault file
+     */
+    private static boolean readFile(String fname, ArrayList<UserInfo> users, ArrayList<DataEntry> dataList) {
+
         //open file
         try (Scanner sc = new Scanner(new File(fname))) {
-            int lineNumber = 0;
             while (sc.hasNextLine()) {
-                lineNumber++;
                 String line = sc.nextLine().trim();
                 if (line.isEmpty())
                     continue;
@@ -47,21 +63,35 @@ public class Vault {
                 //split line by whitespace
                 String[] tokens = line.split("\\s");
                 //check file formatting
-                if (tokens.length != 4 || !tokens[0].equals("user")) {
-                    System.out.println("Error! File '" + fname + "' improperly formatted.");
-                    return null;
+                if (tokens[0].equals("user")) {
+                    if(tokens.length != 4){
+                        System.out.println("Error! File '" + fname + "' improperly formatted.");
+                        return false;
+                    }
+                    //add user to userlist
+                    users.add(new UserInfo(tokens[1], tokens[2], tokens[3]));
                 }
-
-                //create user info and add to list
-                users.add(new UserInfo(tokens[1], tokens[2], tokens[3]));
+                //data line
+                else if(tokens[0].equals("data")){
+                    if(tokens.length != 4){
+                        System.out.println("Error! File '" + fname + "' improperly formatted.");
+                        return false;
+                    }
+                    //add data to datalist
+                    dataList.add(new DataEntry(tokens[1], tokens[2], tokens[3]));
+                }
+                else{
+                    System.out.println("Error! File '" + fname + "' improperly formatted.");
+                    return false;
+                }
             }
         }
         //file not found
         catch (FileNotFoundException f) {
             System.out.println("Error! File '" + fname + "' could not be opened.");
-            return null;
+            return false;
         }
-        return users;
+        return true;
     }
 
     /**
@@ -101,9 +131,25 @@ public class Vault {
     }
 
     /**
+     * method to return encryptor based on the encalg name
+     */
+    private static Encryptor getEncryptor(String alg){
+        switch(alg){
+            case "clear":
+                return new Clear();
+            case "caesar":
+                return new Caesar();
+            case "vigenere":
+                return new Vigenere();
+            default:
+                return null;
+        }
+    }
+
+    /**
      * method to authenticate a user
      */
-    private static void authenticate(Console con, ArrayList<UserInfo> users) {
+    private static void authenticate(Console con, ArrayList<UserInfo> users, ArrayList<DataEntry> dataList) {
         //user input handling for username and password
         String username = con.readLine("username: ");
         System.out.print("password: ");
@@ -133,22 +179,21 @@ public class Vault {
         }
 
         try {
-            //compute hash and compare
-            if ((algChoice.hash(pswd.toCharArray())).equals(match.hash)) {
-                System.out.println("Access granted!");
+            //compute hash
+            String computed = algChoice.hash(pswd.toCharArray());
 
-                //command loop
-                while (true) {
-                    String cmd = con.readLine("> ");
-                    if (cmd.equals("quit"))
-                        break;
-                }
-            } else {
-                System.out.println("Access denied!");
+            //grant access if hashes match and enter command loop
+            if(computed.equals(match.hash)) {
+                System.out.println("Access granted!");
+                commandLoop(con, username, pswd, dataList);
             }
-        } catch (Exception e) {
-            System.out.println("Access denied!");
+            else
+                System.out.println("Access denied!");
+
         }
+        catch (Exception e) {
+            System.out.println("Access denied!");
+        }   
     }
 
     /**
@@ -201,6 +246,114 @@ public class Vault {
     }
 
     /**
+     * function handling command loop and user input for commands
+     */
+    private static void commandLoop(Console con, String username, String password, ArrayList<DataEntry> dataList){
+        while(true){
+            //get user input
+            String cmd = con.readLine("> ");
+
+            //quit
+            if(cmd.equals("quit")){
+                break;
+            }
+            //labels
+            else if(cmd.equals("labels")){
+                handleLabels(username, password, dataList);
+            }
+            //get x
+            //uses startsWith method to determine if get keyword is there
+            else if(cmd.startsWith("get ")){
+                //get the rest of the string after "get"
+                String lab = cmd.substring(4);
+                handleGet(username, password, lab, dataList);
+            }
+            //bad command
+            else{
+                System.out.println("Unknown command '" + cmd + "'.");
+            }
+        }
+    }
+
+    /**
+     * helper method for labels cmd
+     */
+    private static void handleLabels(String username, String password, ArrayList<DataEntry> dataList){
+        //loop through each
+        for (DataEntry temp: dataList) {
+            //username match check
+            if (!temp.username.equals(username))
+                continue;
+
+            try {
+                Encryptor enc = getEncryptor(temp.encalg);
+
+                if (enc == null) {
+                    System.out.println("Error! Encryption algorithm '" + temp.encalg + "' not supported.");
+                    continue;
+                }
+                //decryption process
+                enc.init(password.toCharArray());
+                String plain = enc.decrypt(temp.ciphertext);
+
+                int ind = plain.indexOf('_');
+                if (ind == -1)
+                    throw new Exception();
+
+                //get label, up to the first '_'
+                String label = plain.substring(0, ind);
+                System.out.println(label);
+            }
+            catch (Exception e) {
+                System.out.println("Error! corrupted entry '" + temp.ciphertext + "' in vault file.");
+            }
+        }
+    }
+
+    /**
+     * helper method for get command
+     */
+    private static void handleGet(String username, String password, String targetLabel, ArrayList<DataEntry> dataList){
+        //loop through datalist
+        for (DataEntry temp: dataList) {
+            if (!temp.username.equals(username))
+                continue;
+
+            try {
+                Encryptor enc = getEncryptor(temp.encalg);
+
+                //error check for bag alg name
+                if (enc == null) {
+                    System.out.println("Error! Encryption algorithm '" + temp.encalg + "' not supported.");
+                    continue;
+                }
+
+                //decryption process
+                enc.init(password.toCharArray());
+                String plain = enc.decrypt(temp.ciphertext);
+
+
+                int ind = plain.indexOf('_');
+                if (ind == -1)
+                    throw new Exception();
+
+                //separate the label and the rest of the text
+                String label = plain.substring(0, ind);
+                String text = plain.substring(ind + 1);
+
+                //get the right label, compare to target
+                if (label.equals(targetLabel)) {
+                    System.out.println(text);
+                    return;
+                }
+            }
+            catch (Exception e) {
+                System.out.println("Error! corrupted entry '" + temp.ciphertext + "' in vault file.");
+            }
+        }
+    }
+    
+    /**
      * main method
      */
     public static void main(String[] args) {
@@ -217,15 +370,18 @@ public class Vault {
 
         Console con = System.console();
 
-        //read users from vault file
-        ArrayList<UserInfo> users = readUsers(fname);
-        if (users == null)
-            return;
+        //declare two lists
+        ArrayList<UserInfo> users = new ArrayList<>();
+        ArrayList<DataEntry> dataList = new ArrayList<>();
 
-        //either add user or authenticate depending what mode program is in
+        //read in data and users
+        if(!readFile(fname, users, dataList))
+            return;
+        
+        //either add users or authenticate based on -au flag
         if(isAddUser)
-            addUser(con, users, fname);
+            addUser(con, users,fname);
         else
-            authenticate(con, users);
+            authenticate(con,users, dataList);
     }
 }
