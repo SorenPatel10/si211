@@ -23,10 +23,10 @@ public class ShiftVigenereHash implements Hasher {
     /**
      * calcualtions to get the hash
      */
-    public String hash(char[] password) throws Exception {
+    public String hash(char[] password) throws VaultExceptions.EmptyKeyException, VaultExceptions.IllegalCharacterException {
         //error check
         if(password == null || password.length == 0)
-            throw new Exception("Hasher not initialized with password.");
+            throw new VaultExceptions.EmptyKeyException();
 
         //starting value
         String x = "GO_NAVY_2018^mid";

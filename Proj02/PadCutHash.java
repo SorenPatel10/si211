@@ -19,12 +19,12 @@ public class PadCutHash implements Hasher{
     /**
      * even though key is not necessary for hashing, still check
      */
-    public void init(char[] key) throws Exception{
+    public void init(char[] key) throws VaultExceptions.IllegalCharacterException{
         //error check key
         if(key != null){
             for(char c : key){
                 if(c < 42 || c>122)
-                    throw new Exception("Character in key out of range [42,122].");
+                    throw new VaultExceptions.IllegalCharacterException(c, 42, 122);
             }
         }
     }
@@ -32,12 +32,12 @@ public class PadCutHash implements Hasher{
     /**
      * hashing algorithm method (first 16 chars or string + x's)
      */
-    public String hash(char[] password) throws Exception{
+    public String hash(char[] password) throws VaultExceptions.IllegalCharacterException{
 
         //error check
         for(char c: password){
             if(c < 42 || c > 122)
-                throw new Exception("Character out of range [42,122].");
+                throw new VaultExceptions.IllegalCharacterException(c, 42, 122);
         }
         String res = new String(password);
         //chop first 16 case

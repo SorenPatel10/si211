@@ -22,16 +22,16 @@ public class Caesar implements Encryptor{
     /**
      * method processes the encryption key
      */
-    public void init(char[] key) throws Exception{
+    public void init(char[] key) throws VaultExceptions.EmptyKeyException, VaultExceptions.IllegalCharacterException{
         //error check
         if(key == null || key.length == 0)
-            throw new Exception("Key is empty.");
+            throw new VaultExceptions.EmptyKeyException();
         
         //start at 18, error check
         int sum = 18;
         for(char c: key){
             if(c < 42 || c > 122)
-                throw new Exception("Character in key out of range [42,122].");
+                throw new VaultExceptions.IllegalCharacterException(c, 42, 122);
 
             sum += (c-42);
         }
@@ -44,7 +44,7 @@ public class Caesar implements Encryptor{
     /**
      * method to encrypt plaintext
      */
-    public String encrypt(String plain) throws Exception{
+    public String encrypt(String plain) throws VaultExceptions.IllegalCharacterException{
         String res = "";
 
         for(int i = 0; i < plain.length(); i++){
@@ -52,7 +52,7 @@ public class Caesar implements Encryptor{
 
             //error check
             if(pc < 42 || pc > 122)
-                throw new Exception("Character out of range [42,122].");
+                throw new VaultExceptions.IllegalCharacterException(pc, 42, 122);
             
             //encryption calculations
             int p = pc-42;
@@ -66,7 +66,7 @@ public class Caesar implements Encryptor{
     /**
      * method to decrypt ciphertext
      */
-    public String decrypt(String cipher) throws Exception{
+    public String decrypt(String cipher) throws VaultExceptions.IllegalCharacterException{
         String res = "";
 
         for(int i = 0; i < cipher.length(); i++){
@@ -74,7 +74,7 @@ public class Caesar implements Encryptor{
 
             //error check
             if(cc < 42 || cc > 122)
-                throw new Exception("Character out of range [42,122].");
+                throw new VaultExceptions.IllegalCharacterException(cc, 42, 122);
 
             //decryption calculations
             int c = cc-42;

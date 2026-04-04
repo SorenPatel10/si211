@@ -1,6 +1,11 @@
 MIDN 3/C Soren Patel
 284932
-Submitting step 5
-Part 4 code refactored heavily, helper functions made
-Some methods rewritten to include data arraylist
+Submitting step 6
+Main refactoring changes in step 6:
+    1. writeUser method changed to writeAll (data included)
+    2. Iterator usage for removing duplicate labels
+    3. Exception hierarchy entirely refactored
+    4. decryptEntry method added to reduce code duplication
+    5. handleAdd method added to handle add command
+    6. Some method signatures changed to pass in more arguments
 No Known Issues

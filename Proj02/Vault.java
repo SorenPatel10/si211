@@ -95,13 +95,18 @@ public class Vault {
     }
 
     /**
-     * method to write all users back to vault file
+     * method to write all users and data back to vault file
      */
-    private static boolean writeUsers(String fname, ArrayList<UserInfo> users) {
+    private static boolean writeAll(String fname, ArrayList<UserInfo> users, ArrayList<DataEntry> dataList) {
         //open printwrite to write to file
         try (PrintWriter pw = new PrintWriter(new File(fname))) {
+            //write users
             for (UserInfo temp: users){
                 pw.println("user " + temp.username + " " + temp.alg + " " + temp.hash);
+            }
+            //write data
+            for(DataEntry temp: dataList){
+                pw.println("data " + temp.username + " " + temp.encalg + " " + temp.ciphertext);
             }
             //successful write
             return true;
@@ -147,9 +152,22 @@ public class Vault {
     }
 
     /**
+     * helper method to decrypt entry
+     */
+    private static String decryptEntry(DataEntry temp, String password) throws Exception{
+        Encryptor enc = getEncryptor(temp.encalg);
+        //error check decryption algorithm
+        if(enc == null)
+            throw new VaultExceptions.UnsupportedEncryptionException(temp.encalg);
+
+        enc.init(password.toCharArray());
+        return enc.decrypt(temp.ciphertext);
+    }
+
+    /**
      * method to authenticate a user
      */
-    private static void authenticate(Console con, ArrayList<UserInfo> users, ArrayList<DataEntry> dataList) {
+    private static void authenticate(Console con, ArrayList<UserInfo> users, ArrayList<DataEntry> dataList, String fname) {
         //user input handling for username and password
         String username = con.readLine("username: ");
         System.out.print("password: ");
@@ -185,7 +203,7 @@ public class Vault {
             //grant access if hashes match and enter command loop
             if(computed.equals(match.hash)) {
                 System.out.println("Access granted!");
-                commandLoop(con, username, pswd, dataList);
+                commandLoop(con, username, pswd, dataList, fname, users);
             }
             else
                 System.out.println("Access denied!");
@@ -242,13 +260,13 @@ public class Vault {
 
         //add user to arraylist and write to file
         users.add(new UserInfo(username, alg, hash));
-        writeUsers(fname, users);
+        writeAll(fname, users, new ArrayList<DataEntry>());
     }
 
     /**
      * function handling command loop and user input for commands
      */
-    private static void commandLoop(Console con, String username, String password, ArrayList<DataEntry> dataList){
+    private static void commandLoop(Console con, String username, String password, ArrayList<DataEntry> dataList, String fname, ArrayList<UserInfo> users){
         while(true){
             //get user input
             String cmd = con.readLine("> ");
@@ -264,9 +282,11 @@ public class Vault {
             //get x
             //uses startsWith method to determine if get keyword is there
             else if(cmd.startsWith("get ")){
-                //get the rest of the string after "get"
-                String lab = cmd.substring(4);
-                handleGet(username, password, lab, dataList);
+                handleGet(username, password, cmd.substring(4), dataList);
+            }
+            //add command
+            else if(cmd.startsWith("add ")){
+                handleAdd(username, password, cmd.substring(4), dataList, fname, users);
             }
             //bad command
             else{
@@ -286,23 +306,14 @@ public class Vault {
                 continue;
 
             try {
-                Encryptor enc = getEncryptor(temp.encalg);
-
-                if (enc == null) {
-                    System.out.println("Error! Encryption algorithm '" + temp.encalg + "' not supported.");
-                    continue;
-                }
-                //decryption process
-                enc.init(password.toCharArray());
-                String plain = enc.decrypt(temp.ciphertext);
+                String plain = decryptEntry(temp, password);
 
                 int ind = plain.indexOf('_');
                 if (ind == -1)
-                    throw new Exception();
+                    throw new VaultExceptions.CorruptedEntryException(temp.ciphertext);
 
                 //get label, up to the first '_'
-                String label = plain.substring(0, ind);
-                System.out.println(label);
+                System.out.println(plain.substring(0, ind));
             }
             catch (Exception e) {
                 System.out.println("Error! corrupted entry '" + temp.ciphertext + "' in vault file.");
@@ -320,22 +331,11 @@ public class Vault {
                 continue;
 
             try {
-                Encryptor enc = getEncryptor(temp.encalg);
-
-                //error check for bag alg name
-                if (enc == null) {
-                    System.out.println("Error! Encryption algorithm '" + temp.encalg + "' not supported.");
-                    continue;
-                }
-
-                //decryption process
-                enc.init(password.toCharArray());
-                String plain = enc.decrypt(temp.ciphertext);
-
+                String plain = decryptEntry(temp, password);
 
                 int ind = plain.indexOf('_');
                 if (ind == -1)
-                    throw new Exception();
+                    throw new VaultExceptions.CorruptedEntryException(temp.ciphertext);
 
                 //separate the label and the rest of the text
                 String label = plain.substring(0, ind);
@@ -352,6 +352,75 @@ public class Vault {
             }
         }
     }
+
+    /**
+     * helper method to handle add command
+     */
+    private static void handleAdd(String username, String password, String args, ArrayList<DataEntry> dataList, String fname, ArrayList<UserInfo> users){
+        //split entry by space delimiter
+        String[] tokens = args.split(" ", 3);
+        //bad entry
+        if(tokens.length < 3) return;
+
+        String encalg = tokens[0];
+        String label = tokens[1];
+        String text = tokens[2];
+
+        try{
+            //error check algorithm choice
+            Encryptor enc = getEncryptor(encalg);
+            if(enc == null){
+                throw new VaultExceptions.UnsupportedEncryptionException(encalg);
+            }
+
+            //error check label
+            for(char c: label.toCharArray()){
+                if(c<42 || c>122){
+                    throw new VaultExceptions.InvalidLabelException(label);
+                }
+            }
+
+            //error check text
+            for(char c: text.toCharArray()){
+                if(c < 42 || c > 122){
+                    throw new VaultExceptions.IllegalCharacterException(c,42,122);
+                }
+            }
+
+            enc.init(password.toCharArray());
+            String cipher = enc.encrypt(label + "_" + text);
+
+            //if label already there, remove
+            //uses iterator
+            Iterator<DataEntry> it = dataList.iterator();
+            while(it.hasNext()){
+                //store next
+                DataEntry temp = it.next();
+
+                if(!temp.username.equals(username)){
+                    continue;
+                }
+
+                String plain = decryptEntry(temp,password);
+                int ind = plain.indexOf('_');
+                //underscore found
+                if(ind != -1){
+                    //access just the label
+                    String lab = plain.substring(0,ind);
+                    if(lab.equals(label)){
+                        it.remove();
+                        break;
+                    }
+                }
+            }
+            //add new entry and write to file
+            dataList.add(new DataEntry(username, encalg, cipher));
+            writeAll(fname, users, dataList);
+        }
+        catch(Exception e){
+            System.out.println("Error, could not add entry.");
+        }
+    }
     
     /**
      * main method
@@ -365,7 +434,7 @@ public class Vault {
         //flag to check if we have -au
         boolean isAddUser = args[0].equals("-au");
 
-        //ternary operator I know Dr. Brown likes
+        //ternary operator for Dr. Brown happiness
         String fname = isAddUser ? args[1] : args[0];
 
         Console con = System.console();
@@ -382,6 +451,6 @@ public class Vault {
         if(isAddUser)
             addUser(con, users,fname);
         else
-            authenticate(con,users, dataList);
+            authenticate(con,users, dataList, fname);
     }
 }
