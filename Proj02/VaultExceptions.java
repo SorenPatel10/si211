@@ -14,7 +14,16 @@ public class VaultExceptions {
      */
     public static class IllegalCharacterException extends Exception {
         public IllegalCharacterException(char c, int min, int max) {
-            super("Illegal character '" + c + "' found. Allowed ASCII range is [" + min + "," + max + "].");
+            super("Error! Invalid character '" + c + "' in text.");
+        }
+    }
+
+    /**
+     * password contains illegal characters out of range min-max
+     */
+    public static class IllegalCharacterInPasswordException extends Exception {
+        public IllegalCharacterInPasswordException(char c, int min, int max) {
+            super("Error! Invalid symbol '" + c + "' in password.");
         }
     }
 
@@ -23,7 +32,7 @@ public class VaultExceptions {
      */
     public static class InvalidLabelException extends Exception {
         public InvalidLabelException(String label) {
-            super("Label '" + label + "' is invalid.");
+            super("Error! Label '" + label + "' is invalid.");
         }
     }
 
@@ -41,7 +50,7 @@ public class VaultExceptions {
      */
     public static class UnsupportedEncryptionException extends Exception {
         public UnsupportedEncryptionException(String encalg) {
-            super("Encryption algorithm '" + encalg + "' not supported.");
+            super("Error! Encryption algorithm '" + encalg + "' not supported.");
         }
     }
 
@@ -50,7 +59,7 @@ public class VaultExceptions {
      */
     public static class UnsupportedHashException extends Exception {
         public UnsupportedHashException(String hashalg) {
-            super("Hash algorithm '" + hashalg + "' not supported.");
+            super("Error! Hash algorithm '" + hashalg + "' not supported.");
         }
     }
 

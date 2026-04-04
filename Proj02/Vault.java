@@ -154,14 +154,25 @@ public class Vault {
     /**
      * helper method to decrypt entry
      */
-    private static String decryptEntry(DataEntry temp, String password) throws Exception{
+    private static String decryptEntry(DataEntry temp, String password) throws VaultExceptions.UnsupportedEncryptionException, VaultExceptions.CorruptedEntryException {
         Encryptor enc = getEncryptor(temp.encalg);
         //error check decryption algorithm
         if(enc == null)
             throw new VaultExceptions.UnsupportedEncryptionException(temp.encalg);
 
-        enc.init(password.toCharArray());
-        return enc.decrypt(temp.ciphertext);
+        try {
+            enc.init(password.toCharArray());
+            String decrypted = enc.decrypt(temp.ciphertext);
+            if(!decrypted.contains("_"))
+                throw new VaultExceptions.CorruptedEntryException(temp.ciphertext);
+            return decrypted;
+        }
+        catch(VaultExceptions.IllegalCharacterException | VaultExceptions.EmptyKeyException e){
+            throw new VaultExceptions.CorruptedEntryException(temp.ciphertext);
+        }
+        catch(Exception e){
+            throw new VaultExceptions.CorruptedEntryException(temp.ciphertext);
+        }
     }
 
     /**
@@ -225,42 +236,47 @@ public class Vault {
         String password = new String(pswdChars);
         String alg = con.readLine("Hash algorithm: ");
 
-        //error check password for valid ASCII range
-        for(char c: password.toCharArray()){
-            if (c < 42 || c > 122){
-                System.out.println("Error! Invalid symbol '" + c + "' in password.");
-                return;
-            }
-        }
-
-        //error check algorithm input
-        Hasher hasher = getHasher(alg);
-        if(hasher == null){
-            System.out.println("Error! Hash algorithm '" + alg + "' not supported.");
-            return;
-        }
-
-        //error check username uniqueness
-        for(UserInfo u: users) {
-            if (u.username.equals(username)) {
-                System.out.println("Error! Username '" + username + "' already in use.");
-                return;
-            }
-        }
-
-        //compute hash
-        String hash;
         try {
-            hash = hasher.hash(password.toCharArray());
+            //error check password for valid ASCII range
+            for(char c: password.toCharArray()){
+                if (c < 42 || c > 122){
+                    throw new VaultExceptions.IllegalCharacterInPasswordException(c, 42, 122);
+                }
+            }
+
+            //error check algorithm input
+            Hasher hasher = getHasher(alg);
+            if(hasher == null){
+                throw new VaultExceptions.UnsupportedHashException(alg);
+            }
+
+            //error check username uniqueness
+            for(UserInfo u: users) {
+                if (u.username.equals(username)) {
+                    System.out.println("Error! Username '" + username + "' already in use.");
+                    return;
+                }
+            }
+
+            //compute hash
+            String hash = hasher.hash(password.toCharArray());
+
+            //add user to arraylist and write to file
+            users.add(new UserInfo(username, alg, hash));
+            writeAll(fname, users, new ArrayList<DataEntry>());
+        }
+        catch(VaultExceptions.IllegalCharacterException e){
+            System.out.println(e.getMessage());
+        }
+        catch(VaultExceptions.UnsupportedHashException e){
+            System.out.println(e.getMessage());
+        }
+        catch(VaultExceptions.IllegalCharacterInPasswordException e){
+            System.out.println(e.getMessage());
         }
         catch(Exception e){
             System.out.println("Error! Could not hash password.");
-            return;
         }
-
-        //add user to arraylist and write to file
-        users.add(new UserInfo(username, alg, hash));
-        writeAll(fname, users, new ArrayList<DataEntry>());
     }
 
     /**
@@ -308,14 +324,14 @@ public class Vault {
             try {
                 String plain = decryptEntry(temp, password);
 
-                int ind = plain.indexOf('_');
-                if (ind == -1)
-                    throw new VaultExceptions.CorruptedEntryException(temp.ciphertext);
-
                 //get label, up to the first '_'
+                int ind = plain.indexOf('_');
                 System.out.println(plain.substring(0, ind));
             }
-            catch (Exception e) {
+            catch (VaultExceptions.UnsupportedEncryptionException e){
+                System.out.println("Error! Encryption algorithm '" + temp.encalg + "' not supported.");
+            }
+            catch (VaultExceptions.CorruptedEntryException e){
                 System.out.println("Error! corrupted entry '" + temp.ciphertext + "' in vault file.");
             }
         }
@@ -334,10 +350,6 @@ public class Vault {
                 String plain = decryptEntry(temp, password);
 
                 int ind = plain.indexOf('_');
-                if (ind == -1)
-                    throw new VaultExceptions.CorruptedEntryException(temp.ciphertext);
-
-                //separate the label and the rest of the text
                 String label = plain.substring(0, ind);
                 String text = plain.substring(ind + 1);
 
@@ -347,7 +359,10 @@ public class Vault {
                     return;
                 }
             }
-            catch (Exception e) {
+            catch (VaultExceptions.UnsupportedEncryptionException e){
+                System.out.println("Error! Encryption algorithm '" + temp.encalg + "' not supported.");
+            }
+            catch (VaultExceptions.CorruptedEntryException e){
                 System.out.println("Error! corrupted entry '" + temp.ciphertext + "' in vault file.");
             }
         }
@@ -366,7 +381,7 @@ public class Vault {
         String label = tokens[1];
         String text = tokens[2];
 
-        try{
+        try {
             //error check algorithm choice
             Encryptor enc = getEncryptor(encalg);
             if(enc == null){
@@ -375,7 +390,7 @@ public class Vault {
 
             //error check label
             for(char c: label.toCharArray()){
-                if(c<42 || c>122){
+                if(c<42 || c>122 || c=='_'){
                     throw new VaultExceptions.InvalidLabelException(label);
                 }
             }
@@ -383,7 +398,7 @@ public class Vault {
             //error check text
             for(char c: text.toCharArray()){
                 if(c < 42 || c > 122){
-                    throw new VaultExceptions.IllegalCharacterException(c,42,122);
+                    throw new VaultExceptions.IllegalCharacterException(c, 42, 122);
                 }
             }
 
@@ -416,6 +431,15 @@ public class Vault {
             //add new entry and write to file
             dataList.add(new DataEntry(username, encalg, cipher));
             writeAll(fname, users, dataList);
+        }
+        catch(VaultExceptions.UnsupportedEncryptionException e){
+            System.out.println("Error! Encryption algorithm '" + encalg + "' not supported.");
+        }
+        catch(VaultExceptions.InvalidLabelException e){
+            System.out.println(e.getMessage());
+        }
+        catch(VaultExceptions.IllegalCharacterException e){
+            System.out.println(e.getMessage());
         }
         catch(Exception e){
             System.out.println("Error, could not add entry.");
