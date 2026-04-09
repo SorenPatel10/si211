@@ -12,6 +12,6 @@ public class BotStrip extends Strip {
     }
 
     public static void setCost(double d){
-        cost.setText(d);
+        cost.setValue(String.format("%.2f",d));
     }
 }

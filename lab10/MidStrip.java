@@ -9,11 +9,18 @@ public class MidStrip extends Strip {
     public MidStrip(){
         super();
         add(monthsToPayoff);
-        add(new JButton("calculate"));
+
+        JButton calcButton = new JButton("calculate");
+        calcButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+                Finance.calcInterest();
+            }
+        });
+        add(calcButton);
     
     }
 
-    public static int getMonthsToPayoff(){
-        return Integer.parseInt(monthsToPayoff.getText());
+    public static void setMonthsToPayoff(int m){
+        monthsToPayoff.setValue(String.valueOf(m));
     }
 }
