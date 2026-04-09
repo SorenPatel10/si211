@@ -6,16 +6,21 @@ public class MidStrip extends Strip {
 
     private static DrBrown monthsToPayoff = new DrBrown("months to payoff");
 
+
+  private class TempClass implements ActionListener {
+    public void actionPerformed(ActionEvent e){
+      Finance.calcInterest();
+    }
+  }
+
+  
     public MidStrip(){
         super();
         add(monthsToPayoff);
 
         JButton calcButton = new JButton("calculate");
-        calcButton.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e){
-                Finance.calcInterest();
-            }
-        });
+	
+        calcButton.addActionListener( new TempClass() );
         add(calcButton);
     
     }

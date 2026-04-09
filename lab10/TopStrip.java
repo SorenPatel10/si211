@@ -25,8 +25,8 @@ public class TopStrip extends Strip {
     public static double getLoan(){
         return Double.parseDouble(loanAmount.getValue());
     }
-    public static int getMonthlyPayment(){
-        return Integer.parseInt(monthlyPayment.getValue());
+    public static double getMonthlyPayment(){
+        return Double.parseDouble(monthlyPayment.getValue());
     }
     public static double getRate(){
         return (double)cbox.getSelectedItem();
