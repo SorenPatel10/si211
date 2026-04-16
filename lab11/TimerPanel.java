@@ -29,6 +29,7 @@ public class TimerPanel extends JPanel implements ActionListener{
 
     public void actionPerformed(ActionEvent e){
         int sec;
+        
 
         try{
             sec = Integer.parseInt(textField.getText());
@@ -43,5 +44,6 @@ public class TimerPanel extends JPanel implements ActionListener{
 
         CDThread thr = new CDThread(label,sec);
         thr.start();
+
     }
 }
