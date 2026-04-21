@@ -4,14 +4,18 @@ import java.util.*;
 
 public class DrawArea extends JComponent {
 
-    private double a0 = 0.0;
-    private double a1 = 0.0;
+    private Orbiter body0;
+    private Orbiter body1;
+
     private ArrayList<Integer> xCoords = new ArrayList<>();
     private ArrayList<Integer> yCoords = new ArrayList<>();
 
     public DrawArea() {
         super();
         setPreferredSize(new Dimension(400, 400));
+
+        body0 = new Orbiter(200, 200, 100, 0.01);
+        body1 = new Orbiter(0, 0, 50, 0.04);
     }
 
     protected void paintComponent(Graphics g) {
@@ -28,26 +32,27 @@ public class DrawArea extends JComponent {
 
         int p0x = 200;
         int p0y = 200;
-        int r0 = 100;
-        int r1 = 50;
 
-        int p1x = (int)(p0x + r0*Math.cos(a0));
-        int p1y = (int)(p0y + r0*Math.sin(a0));
-        int p2x = (int)(p1x + r1*Math.cos(a1));
-        int p2y = (int)(p1y + r1*Math.sin(a1));
+        int p1x = body0.getX();
+        int p1y = body0.getY();
+
+        body1.setCenter(p1x, p1y);
+
+        int p2x = body1.getX();
+        int p2y = body1.getY();
 
         xCoords.add(p2x);
         yCoords.add(p2y);
 
         g2.setStroke(new BasicStroke(2));
         g2.setColor(Color.PINK);
-        drawCenteredCircle(g2, p0x, p0y, r0);
+        drawCenteredCircle(g2, p0x, p0y, 100);
 
         g2.setColor(Color.PINK);
         fillCenteredCircle(g2, p1x, p1y, 8);
 
         g2.setColor(new Color(128, 0, 128));
-        drawCenteredCircle(g2, p1x, p1y, r1);
+        drawCenteredCircle(g2, p1x, p1y, 50);
 
         g2.setColor(new Color(128, 0, 128));
         fillCenteredCircle(g2, p2x, p2y, 6);
@@ -58,8 +63,8 @@ public class DrawArea extends JComponent {
     }
 
     public void updateAnimation() {
-        a0 += 0.01;
-        a1 += 0.04;
+        body0.update();
+        body1.update();
     }
 
     public void drawCenteredCircle(Graphics g, int centerX, int centerY, int radius) {
