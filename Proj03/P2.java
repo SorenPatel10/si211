@@ -27,6 +27,7 @@ public class P2{
 
         //create frame and establich borderlayout
         JFrame frame = new JFrame();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 
         //initialize and add board to center

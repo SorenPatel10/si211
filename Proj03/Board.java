@@ -14,8 +14,10 @@ import java.util.ArrayList;
  */
 public class Board extends JPanel implements TileListener{
 
-    //arraylist to keep track of clicked tiles
-    private ArrayList<Tile> clickedTiles = new ArrayList<>();
+    private Tile first = null;
+    private Tile second = null;
+    private boolean handling = false;
+    private static Tile active = null;
 
     /**
      * constructor, takes in 2d int array of ids
@@ -41,42 +43,57 @@ public class Board extends JPanel implements TileListener{
      * activated method from TileListener interface
      */
     public void activated(Tile t){
-        clickedTiles.add(t);
-
-        //check if 2 tiles are clicked
-        if(clickedTiles.size() == 2){
-
-            //get both of the clicked tiles
-            Tile first = clickedTiles.get(0);
-            Tile second = clickedTiles.get(1);
-
-            //if they do not match
-            if(first.getKindID() != second.getKindID()){
-                //unclick both tiles and print accordingly
-                first.unclick();
-                second.unclick();
-                System.out.println("Tile " + first.getPos() + " deactivated");
-                System.out.println("Tile " + second.getPos() + " deactivated");
-            }
-            //they match
-            else{
-                //set match flag to true and print accordingly
-                first.setMatchedTrue();
-                second.setMatchedTrue();
-                System.out.println("Tile " + first.getPos() + " matched");
-                System.out.println("Tile " + second.getPos() + " matched");
-                
-            }
-
-            //clear out and reset arraylist
-            clickedTiles.clear();
+        if(t.isMatched()){
+            return;
         }
+
+        // if(handling)
+        //     return;
+
+        if(active == t){
+            active = null;
+            t.repaint();
+            return;
+        }
+
+        if(active == null){
+            active = t;
+            t.repaint();
+            return;
+        }
+
+        Tile first = active;
+        Tile second = t;
+
+        //match logic
+        //not match
+        if(first.getKindID() != second.getKindID()){
+            
+            System.out.println("Tile " + first.getPos() + " deactivated");
+            System.out.println("Tile " + second.getPos() + " deactivated");
+        }
+        //match
+        else{
+            first.setMatchedTrue();
+            second.setMatchedTrue();
+            System.out.println("Tile " + first.getPos() + " matched");
+            System.out.println("Tile " + second.getPos() + " matched");
+        }
+
+        first.repaint();
+        second.repaint();
+        first.setActivated(false);
+            second.setActivated(false);
+        // handling = false;
     }
 
     /**
      * deactivated method from TileListener interface
      */
     public void deactivated(Tile t){
-        clickedTiles.remove(t);
+    }
+
+    public static Tile getActiveTile(){
+        return active;
     }
 }

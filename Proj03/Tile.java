@@ -17,10 +17,10 @@ import java.util.ArrayList;
 public class Tile extends JPanel implements MouseListener{
     
     //fields
-    private boolean clicked = false;
     private Pos pos;
     private int kindID;
     private boolean matched = false;
+    private boolean activated = false;
     //to keep track of current listeners
     private ArrayList<TileListener> tLists = new ArrayList<>();
 
@@ -60,11 +60,13 @@ public class Tile extends JPanel implements MouseListener{
     public void addTileListener(TileListener t){
         tLists.add(t);
     }
-    public void unclick(){
-        clicked = false;
-    }
+
     public void setMatchedTrue(){
         matched = true;
+        activated = false;
+        // if(clicked == this){
+        //     clicked = null;
+        // }
         //changes tile color to white once a match
         setBackground(Color.WHITE);
         repaint();
@@ -78,32 +80,26 @@ public class Tile extends JPanel implements MouseListener{
     public Pos getPos(){
         return pos;
     }
+    public void setActivated(boolean a){
+        activated = a;
+        repaint();
+    }
+
 
     /**
      * handle click on tile
      */
     public void mousePressed(MouseEvent e){
         
-        //ignore clicks if already matched
         if(matched)
             return;
 
-        //set click flag and print accordingly
-        clicked = !clicked;
-        System.out.print("Tile " + (pos != null ? pos : "") + " ");
-        System.out.println(clicked ? "activated" : "deactivated");
+        activated = true;
 
-        //show border
-        repaint();
-
-        //for all listeners of each tile, set activation status
-        for(TileListener temp: tLists){
-            if(clicked)
-                temp.activated(this);
-            else
-                temp.deactivated(this);
-        }
+        for(TileListener temp: tLists)
+            temp.activated(this);
     }
+
 
     /**
      * overriding paintComponent method from JPanel -> JComponent
@@ -113,13 +109,13 @@ public class Tile extends JPanel implements MouseListener{
         super.paintComponent(g);
 
         //draw border if clicked but not yet matched
-        if(clicked && !matched){
+        if(this==Board.getActiveTile() && !matched){
             //cast g to a 2d graphics object
             Graphics2D g2d = (Graphics2D)g;
             
             //set border color and thickness
             g2d.setColor(Color.BLACK);
-            g2d.setStroke(new BasicStroke(4));
+            g2d.setStroke(new BasicStroke(8));
             
             //draw rectangle to keep border inside tile.
             g2d.drawRect(2,2,getWidth()-4, getHeight()-4);
