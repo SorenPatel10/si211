@@ -1,3 +1,11 @@
+/**
+ * Soren Patel
+ * File created using Google Gemini for Part 6.5
+ * Chat log documented in README
+ * Proj03
+ * PolygonTile.java
+ */
+
 import javax.swing.*;
 import java.awt.*;
 import si211.*;

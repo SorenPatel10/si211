@@ -1,105 +1,140 @@
+/**
+ * Soren Patel
+ * Proj03
+ * Board.java
+ */
+
 import javax.swing.*;
 import java.awt.*;
 import si211.*;
 
-public class Board extends JPanel implements TileListener
-{
+/**
+ * board class (is a JPanel), implements tile listener interface
+ */
+public class Board extends JPanel implements TileListener{
+    
+    //fields
+    //first tile clicked
     private Tile first = null;
+    //whether game is enabled (for start button functionality)
     private boolean enabled = false;
-    private GameFrame frame;
+    //game listener
+    private GameListener listener;
+    //2d array of tiles
+    private Tile[][] tiles;
 
-    public Board(int[][] ids, GameFrame frame)
-    {
-        this.frame = frame;
+    /**
+     * Board constructor
+     * takes in 2d array of kind ids and gameframe
+     */
+    public Board(int[][] ids, GameListener listener){
+        this.listener = listener;
 
-        int N = ids.length;
-        setLayout(new GridLayout(N,N));
+        //create 6x6 grid
+        int n = ids.length;
+        setLayout(new GridLayout(n,n));
 
-        for (int i = 0; i < N; i++)
-        {
-            for (int j = 0; j < N; j++)
-            {
+        //initialize tile array
+        tiles = new Tile[n][n];
+
+        //initialize all tiles in grid
+        for(int i = 0; i < n; i++){
+            for (int j = 0; j < n; j++){
+                
+                //next 2 lines (select whether to use Tiles or PolygonTiles)
                 Tile t = new Tile(new Pos(i,j), ids[i][j]);
                 // Tile t = new PolygonTile(new Pos(i,j), ids[i][j]);
+
                 t.addTileListener(this);
+
+                //store tile in array
+                tiles[i][j] = t;
+
                 add(t);
             }
         }
     }
 
-    public void setEnabledGame(boolean val)
-    {
-        enabled = val;
+    /**
+     * allow game to be played
+     */
+    public void setEnabledGame(boolean b){
+        enabled = b;
     }
 
-    @Override
-    public void activated(Tile t)
-    {
+    /**
+     * main clicking logic for tiles
+     */
+    public void activated(Tile t) {
+
+        //ignore clicks if game isnt enabled
         if (!enabled || t.isMatched())
             return;
 
-        // 🔥 FIX: clicking same tile twice
-        if (first == t)
-        {
+        //same tile clicked twice
+        if (first == t){
+            //remove border, reset selection
             t.setActive(false);
             System.out.println("Tile " + t.getPos() + " deactivated");
-
             first = null;
             return;
         }
 
-        // first selection
-        if (first == null)
-        {
+        //first click on a tile
+        if (first == null){
+            //store clicked tile and draw border
             first = t;
             t.setActive(true);
             System.out.println("Tile " + t.getPos() + " activated");
             return;
         }
 
-        // second selection
+        //second click
+        //we now have two tiles (first and second)
         Tile second = t;
         second.setActive(true);
-
         System.out.println("Tile " + second.getPos() + " activated");
 
-        if (first.getKindID() == second.getKindID())
-        {
+        //match
+        if (first.getKindID() == second.getKindID()){
             System.out.println("Tile " + first.getPos() + " matched");
             System.out.println("Tile " + second.getPos() + " matched");
 
+            //paint tiles white and disable further clicking
             first.setMatched();
             second.setMatched();
 
+            //check if game is over yet
             checkGameOver();
         }
-        else
-        {
+        //no match
+        else{
             System.out.println("Tile " + first.getPos() + " deactivated");
             System.out.println("Tile " + second.getPos() + " deactivated");
         }
 
+        //remove borders and clear tile selections
         first.setActive(false);
         second.setActive(false);
         first = null;
     }
 
-    private void checkGameOver()
-    {
-        Component[] comps = getComponents();
+    /**
+     * method to check if game is done yet
+     */
+    private void checkGameOver(){
 
-        for (Component c : comps)
-        {
-            if (c instanceof Tile)
-            {
-                if (!((Tile)c).isMatched())
+        //loop through all tiles in 2D array
+        for (int i = 0; i < tiles.length; i++){
+            for (int j = 0; j < tiles[i].length; j++){
+
+                if (!tiles[i][j].isMatched())
                     return;
             }
         }
 
-        frame.gameFinished();
+        //all tiles matched means game finished
+        listener.gameFinished();
     }
 
-    @Override
-    public void deactivated(Tile t) {}
 }
