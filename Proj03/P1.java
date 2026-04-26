@@ -32,7 +32,7 @@ public class P1{
         frame.add(e, BorderLayout.EAST);
         frame.add(s, BorderLayout.SOUTH);
         frame.add(w, BorderLayout.WEST);
-        frame.add(new Tile(), BorderLayout.CENTER);
+        //frame.add(new Tile(), BorderLayout.CENTER);
 
         //pack and show frame
         frame.pack();

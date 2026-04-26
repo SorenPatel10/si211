@@ -1,99 +1,105 @@
-/**
- * Soren Patel
- * Board.java
- * Proj03
- */
-
 import javax.swing.*;
 import java.awt.*;
 import si211.*;
-import java.util.ArrayList;
 
-/**
- * board class to put the tiles in a gridlayout
- */
-public class Board extends JPanel implements TileListener{
-
+public class Board extends JPanel implements TileListener
+{
     private Tile first = null;
-    private Tile second = null;
-    private boolean handling = false;
-    private static Tile active = null;
+    private boolean enabled = false;
+    private GameFrame frame;
 
-    /**
-     * constructor, takes in 2d int array of ids
-     */
-    public Board(int[][] ids){
-        
-        int size = ids.length;
-        //structure as gridlayout
-        setLayout(new GridLayout(size,size));
+    public Board(int[][] ids, GameFrame frame)
+    {
+        this.frame = frame;
 
-        //create all tiles and populate by looping through board array
-        for(int i = 0; i < size; i++){
-            for(int j = 0; j < size; j++){
-                //add a new tile with pos(current index) and id(given array current index)
-                Tile temp = new Tile(new Pos(i,j), ids[i][j]);
-                temp.addTileListener(this);
-                add(temp);
+        int N = ids.length;
+        setLayout(new GridLayout(N,N));
+
+        for (int i = 0; i < N; i++)
+        {
+            for (int j = 0; j < N; j++)
+            {
+                Tile t = new Tile(new Pos(i,j), ids[i][j]);
+                // Tile t = new PolygonTile(new Pos(i,j), ids[i][j]);
+                t.addTileListener(this);
+                add(t);
             }
         }
     }
 
-    /**
-     * activated method from TileListener interface
-     */
-    public void activated(Tile t){
-        if(t.isMatched()){
+    public void setEnabledGame(boolean val)
+    {
+        enabled = val;
+    }
+
+    @Override
+    public void activated(Tile t)
+    {
+        if (!enabled || t.isMatched())
+            return;
+
+        // 🔥 FIX: clicking same tile twice
+        if (first == t)
+        {
+            t.setActive(false);
+            System.out.println("Tile " + t.getPos() + " deactivated");
+
+            first = null;
             return;
         }
 
-        // if(handling)
-        //     return;
-
-        if(active == t){
-            active = null;
-            t.repaint();
+        // first selection
+        if (first == null)
+        {
+            first = t;
+            t.setActive(true);
+            System.out.println("Tile " + t.getPos() + " activated");
             return;
         }
 
-        if(active == null){
-            active = t;
-            t.repaint();
-            return;
-        }
-
-        Tile first = active;
+        // second selection
         Tile second = t;
+        second.setActive(true);
 
-        //match logic
-        //not match
-        if(first.getKindID() != second.getKindID()){
-            
+        System.out.println("Tile " + second.getPos() + " activated");
+
+        if (first.getKindID() == second.getKindID())
+        {
+            System.out.println("Tile " + first.getPos() + " matched");
+            System.out.println("Tile " + second.getPos() + " matched");
+
+            first.setMatched();
+            second.setMatched();
+
+            checkGameOver();
+        }
+        else
+        {
             System.out.println("Tile " + first.getPos() + " deactivated");
             System.out.println("Tile " + second.getPos() + " deactivated");
         }
-        //match
-        else{
-            first.setMatchedTrue();
-            second.setMatchedTrue();
-            System.out.println("Tile " + first.getPos() + " matched");
-            System.out.println("Tile " + second.getPos() + " matched");
+
+        first.setActive(false);
+        second.setActive(false);
+        first = null;
+    }
+
+    private void checkGameOver()
+    {
+        Component[] comps = getComponents();
+
+        for (Component c : comps)
+        {
+            if (c instanceof Tile)
+            {
+                if (!((Tile)c).isMatched())
+                    return;
+            }
         }
 
-        first.repaint();
-        second.repaint();
-        first.setActivated(false);
-            second.setActivated(false);
-        // handling = false;
+        frame.gameFinished();
     }
 
-    /**
-     * deactivated method from TileListener interface
-     */
-    public void deactivated(Tile t){
-    }
-
-    public static Tile getActiveTile(){
-        return active;
-    }
+    @Override
+    public void deactivated(Tile t) {}
 }

@@ -1,138 +1,90 @@
-/**
- * Soren Patel
- * Tile.java
- * Proj03
- */
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import javax.swing.border.Border;
 import si211.*;
 import java.util.ArrayList;
 
-/**
- * Tile class, extends JPanel, uses MouseListener interface
- */
-public class Tile extends JPanel implements MouseListener{
-    
-    //fields
+public class Tile extends JPanel implements MouseListener
+{
     private Pos pos;
     private int kindID;
     private boolean matched = false;
-    private boolean activated = false;
-    //to keep track of current listeners
-    private ArrayList<TileListener> tLists = new ArrayList<>();
+    private boolean active = false;
 
-    /**
-     * no arg constructor for p1
-     */
-    public Tile(){
-        //set default size, color, and border
-        setPreferredSize(new Dimension(100,100));
-        setBackground(Color.WHITE);
-        setBorder(BorderFactory.createLineBorder(Color.BLACK));
+    private ArrayList<TileListener> listeners = new ArrayList<>();
 
-        //set tile as its own mouse listener
-        addMouseListener(this);
-    }
-
-    /**
-     * p2 constructor - takes a pos and a kindID
-    */
-    public Tile(Pos pos, int kindID){
-        //instantiate arguments
+    public Tile(Pos pos, int kindID)
+    {
         this.pos = pos;
         this.kindID = kindID;
 
-        //set size, color(according to kindID), and border
         setPreferredSize(new Dimension(100,100));
         setBackground(P3Tools.getSwatchColor(kindID));
         setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
-        //set tile as its own mouselistener
         addMouseListener(this);
     }
 
-    /**
-     * various getter/setter methods needed by Board class
-     */
-    public void addTileListener(TileListener t){
-        tLists.add(t);
+    public void addTileListener(TileListener t)
+    {
+        listeners.add(t);
     }
 
-    public void setMatchedTrue(){
+    public int getKindID()
+    {
+        return kindID;
+    }
+
+    public Pos getPos()
+    {
+        return pos;
+    }
+
+    public boolean isMatched()
+    {
+        return matched;
+    }
+
+    public void setMatched()
+    {
         matched = true;
-        activated = false;
-        // if(clicked == this){
-        //     clicked = null;
-        // }
-        //changes tile color to white once a match
+        active = false;
         setBackground(Color.WHITE);
         repaint();
     }
-    public boolean isMatched(){
-        return matched;
-    }
-    public int getKindID(){
-        return kindID;
-    }
-    public Pos getPos(){
-        return pos;
-    }
-    public void setActivated(boolean a){
-        activated = a;
+
+    public void setActive(boolean val)
+    {
+        if (matched) return;
+        active = val;
         repaint();
     }
 
+    @Override
+    public void mousePressed(MouseEvent e)
+    {
+        if (matched) return;
 
-    /**
-     * handle click on tile
-     */
-    public void mousePressed(MouseEvent e){
-        
-        if(matched)
-            return;
-
-        activated = true;
-
-        for(TileListener temp: tLists)
-            temp.activated(this);
+        for (TileListener t : listeners)
+            t.activated(this);
     }
 
-
-    /**
-     * overriding paintComponent method from JPanel -> JComponent
-     */
-    protected void paintComponent(Graphics g){
-        //clear background
-        super.paintComponent(g);
-
-        //draw border if clicked but not yet matched
-        if(this==Board.getActiveTile() && !matched){
-            //cast g to a 2d graphics object
-            Graphics2D g2d = (Graphics2D)g;
-            
-            //set border color and thickness
-            g2d.setColor(Color.BLACK);
-            g2d.setStroke(new BasicStroke(8));
-            
-            //draw rectangle to keep border inside tile.
-            g2d.drawRect(2,2,getWidth()-4, getHeight()-4);
-        }
-    }
-
-
-    /**
-     * handle mouse release
-     */
-    public void mouseReleased(MouseEvent e){
-        //System.out.println("Tile released");
-    }
-    /**
-     * empty methods to fulfill interface contract
-     */
+    public void mouseReleased(MouseEvent e){}
     public void mouseClicked(MouseEvent e){}
     public void mouseEntered(MouseEvent e){}
     public void mouseExited(MouseEvent e){}
+
+    @Override
+    protected void paintComponent(Graphics g)
+    {
+        super.paintComponent(g);
+
+        if (active && !matched)
+        {
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setColor(Color.BLACK);
+            g2.setStroke(new BasicStroke(8));
+            g2.drawRect(2,2,getWidth()-4,getHeight()-4);
+        }
+    }
 }

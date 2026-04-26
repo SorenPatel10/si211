@@ -2,8 +2,44 @@ Soren Patel
 284932
 Proj03
 
-Submitting:
-    Part 1
-    
-Driver File:
-    P1.java
+Submitting: Complete Game
+Driver File: P2.java
+
+
+Gemini Transcript for Part 6.5
+
+Me:
+    The class Tile defined in @Tile.java depends on the java package documented at
+    https://www.usna.edu/Users/cs/wcbrown/courses/S26SI211/proj/p03/doc/si211/package-summary.html.
+    Your task: create a new class/file that extends my Tile class (inheritance). These new objects which extend Tile should have the additional feature of having a polygon shape. Call it PolygonTile. the Constructor should take in a parameter n for amount of sides (must be >= 3). 
+    Here is my Tile.java file: (file included to follow)
+
+Gemini:
+    To create the PolygonTile class, we will extend your Tile class and override the paintComponent method. This allows us to draw a custom shape (the polygon) on top of the tile while maintaining all the existing logic for positions, listeners, and matching.Since Tile already handles the background color and the "active" border, PolygonTile will focus on calculating the vertices for a regular $n$-sided polygon and drawing it in the center of the panel.The PolygonTile Class: (code to follow)
+    Key Implementation Detailssuper(pos, kindID): Inheritance 101—we must call the parent constructor first so the Tile part of the object initializes correctly (setting the Pos, kindID, and MouseListener).Geometric Math: To place $n$ points evenly around a circle, we use the polar coordinate formulas:$x = \text{centerX} + \text{radius} \cdot \cos(\theta)$$y = \text{centerY} + \text{radius} \cdot \sin(\theta)$The Polygon Object: Using java.awt.Polygon is more efficient than drawing individual lines because it allows you to both draw (outline) and fill the shape easily.Anti-aliasing: I added a "Rendering Hint" in the paintComponent. This makes the diagonal lines of the polygon look smooth rather than jagged/pixelated.Note: Because your Tile class already calls super.paintComponent(g), it handles the setBackground color logic automatically. By calling super.paintComponent(g) inside PolygonTile, we ensure the background and the "active" selection border (the 8-pixel rectangle) are drawn before we layer our polygon on top.
+
+Me: 
+    make it so that the tiles aren't colored anymore. matching these types of tiles is based on their shape. since we are playing on a 6x6 board = 36 tiles = 18 matches, the game should generate all the way from a 3 sided shape to 20 sided.
+
+Gemini:
+    To achieve this, we need to modify the PolygonTile to ignore the kindID for the background color and instead use it to determine the number of sides. We will set the background to a neutral color (like light gray) and ensure the shapes are clearly visible.
+
+    Since you need 18 unique shapes (to make 18 pairs for a 36-tile board), and your shapes range from 3 sides (triangle) to 20 sides (icosagon), the kindID can map directly to the complexity of the shape.
+
+    Updated PolygonTile.java (code to follow)
+
+    Implementation Notes for the Game Logic
+    To get this running on a 6x6 board with 18 matches, you should handle the setup in your main game class (e.g., Board.java or Game.java) like this:
+
+    Generate IDs: Create a list containing two of every integer from 0 to 17.
+
+    Shuffle: Use Collections.shuffle() to randomize the IDs.
+
+    Instantiate: Loop through your 6x6 grid and create a new PolygonTile(pos, id).
+
+    Logic Breakdown
+    The Offset: By setting numSides = kindID + 3, an ID of 0 becomes a triangle, and an ID of 17 becomes a 20-sided polygon.
+
+    Visual Clarity: As the number of sides increases (like 18 vs 19 vs 20), the polygons start looking very much like circles. I set the radius to 40% of the tile size and added a BasicStroke(3) to help the player distinguish the edges more easily.
+
+    Neutrality: The call to setBackground(Color.LIGHT_GRAY) in the constructor is crucial—it "breaks" the P3Tools.getSwatchColor logic from the parent class so the player is forced to look at the shape to find a match.
