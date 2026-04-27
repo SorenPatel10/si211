@@ -111,8 +111,7 @@ public class GameFrame extends JFrame implements GameListener{
             message.setText("Hurry up!");
             startPauseBtn.setText("pause");
             //start timer with new thread
-            Thread t = new Thread(timer);
-            t.start();
+            timer.startTimer();
         }
         //pause game
         else{

@@ -16,6 +16,7 @@ public class TimerThread implements Runnable{
     //volatile ensures atomic operations so they show across threads always
     private volatile boolean running = false;
     private volatile boolean paused = false;
+    private Thread thread;
 
     private int seconds = 0;
     
@@ -55,18 +56,17 @@ public class TimerThread implements Runnable{
      * starts timer by creating new thread
      */
     public void startTimer(){
-        //resume and continue if paused
-        if (running){
+    //if thread exists and is alive just resume
+        if (thread != null && thread.isAlive()){
             paused = false;
             return;
         }
 
-        //ensure not paused
         running = true;
         paused = false;
-        //start thread
-        Thread t = new Thread(this);
-        t.start();
+
+        thread = new Thread(this);
+        thread.start();
     }
 
     /**
