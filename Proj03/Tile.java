@@ -118,4 +118,8 @@ public class Tile extends JPanel implements MouseListener{
             g2.drawRect(2,2,getWidth()-4,getHeight()-4);
         }
     }
+
+    public boolean isActive() {
+        return active;
+    }
 }

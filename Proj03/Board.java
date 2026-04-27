@@ -41,9 +41,7 @@ public class Board extends JPanel implements TileListener{
         for(int i = 0; i < n; i++){
             for (int j = 0; j < n; j++){
                 
-                //next 2 lines (select whether to use Tiles or PolygonTiles)
-                Tile t = new Tile(new Pos(i,j), ids[i][j]);
-                // Tile t = new PolygonTile(new Pos(i,j), ids[i][j]);
+                Tile t = new CoolEffectTile(new Pos(i,j), ids[i][j]);
 
                 t.addTileListener(this);
 
